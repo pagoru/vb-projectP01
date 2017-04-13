@@ -26,6 +26,9 @@ Public Class Form1
         For Each item As String In list
             ListBox1.Items.Add(item)
         Next
+
+        ListBox1.SelectedIndex = 0
+        LoadEmpleado()
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
@@ -35,6 +38,22 @@ Public Class Form1
         For Each item As String In list
             ListBox1.Items.Add(item)
         Next
+
+        ListBox1.SelectedIndex = 0
+        LoadEmpleado()
+    End Sub
+
+    Private Sub ListBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ListBox1.SelectedIndexChanged
+        LoadEmpleado()
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+        If ListBox1.Items.Count - 1 = ListBox1.SelectedIndex Then
+            ListBox1.SelectedIndex = 0
+        Else
+            ListBox1.SelectedIndex += 1
+        End If
+        LoadEmpleado()
     End Sub
 
     Private Function GetEmpleados(orderBy As String)
@@ -77,7 +96,7 @@ Public Class Form1
 
     End Function
 
-    Private Sub ListBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ListBox1.SelectedIndexChanged
+    Private Function LoadEmpleado()
 
         Dim id As String = ListBox1.Items.Item(ListBox1.SelectedIndex).ToString().Split("-").ToList().First()
         Console.WriteLine(id)
@@ -113,6 +132,5 @@ Public Class Form1
         If jefeId IsNot "" Then
             ComboBox1.SelectedItem = GetSingleEmpleado(jefeId)
         End If
-
-    End Sub
+    End Function
 End Class
