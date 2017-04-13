@@ -5,6 +5,9 @@ Public Class Form1
 
     Private connection As SqlConnection
 
+    'Aquesta funció s'encarrega de
+    'carregar el recurs de sql al 
+    'formulari actual
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         connection = New SqlConnection()
         connection.ConnectionString = "Data Source=.\SQLEXPRESS;Initial Catalog=MAGATZEM;Trusted_Connection=True;"
@@ -20,6 +23,10 @@ Public Class Form1
         End If
     End Sub
 
+    'Aquesta funcio permet
+    'carregar y ordenar per
+    'identificador als
+    'empleats
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Dim list As List(Of String) = GetEmpleados("idEmpleado")
         ListBox1.Items.Clear()
@@ -30,7 +37,10 @@ Public Class Form1
 
         SelectIndex(0)
     End Sub
-
+    'Aquesta funcio permet
+    'carregar y ordenar per
+    'cognom als
+    'empleats
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         Dim list As List(Of String) = GetEmpleados("Apellidos")
         ListBox1.Items.Clear()
@@ -42,10 +52,20 @@ Public Class Form1
         SelectIndex(0)
     End Sub
 
+    'Aquesta funcio detecta
+    'si es fa algun
+    'canvi en la llista
+    'de seleccio i llavors
+    'carrega el trebalaldor
+    'actual
     Private Sub ListBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ListBox1.SelectedIndexChanged
         LoadEmpleado()
     End Sub
 
+    'Aquesta funcio detecta
+    'el botó seguent
+    'i selecciona el seguent
+    'element de la llista
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
         If ListBox1.Items.Count > 0 Then
             If ListBox1.Items.Count - 1 = ListBox1.SelectedIndex Then
@@ -56,6 +76,10 @@ Public Class Form1
         End If
     End Sub
 
+    'Aquesta funcio detecta
+    'si s'elimina la seleccio
+    'actual i la elimina mitjançant
+    'sql
     Private Async Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
 
         Dim id As String = ListBox1.Items.Item(ListBox1.SelectedIndex).ToString().Split("-").ToList().First()
@@ -79,12 +103,25 @@ Public Class Form1
 
     End Sub
 
+    'Aquesta funcio
+    'selecciona dins de 
+    'la llista el item
+    'desitjat en funcio
+    'del numero introduit
     Private Sub SelectIndex(i As Integer)
         If ListBox1.Items.Count > 0 Then
             ListBox1.SelectedIndex = i
         End If
     End Sub
 
+    'Aquesta funcio reotrna 
+    'els treballadors
+    'en funcio de un string
+    'que consisteix en un ordre
+    'determinat i en funcio
+    'de les opcions en els 
+    'checkbox per si te jefe
+    'o no
     Private Function GetEmpleados(orderBy As String)
 
         Dim com As SqlCommand = New SqlCommand()
@@ -114,6 +151,9 @@ Public Class Form1
 
     End Function
 
+    'Aquest metode
+    'carrega al treballador
+    'actual en els caixes de edició
     Private Sub LoadEmpleado()
 
         Dim id As String = ListBox1.Items.Item(ListBox1.SelectedIndex).ToString().Split("-").ToList().First()
@@ -159,6 +199,9 @@ Public Class Form1
 
     End Sub
 
+    'Aquest metode 
+    'actualitza la informació
+    'actual del item seleccioant
     Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
         Dim com As SqlCommand = New SqlCommand()
         Dim read As SqlDataReader
@@ -191,6 +234,10 @@ Public Class Form1
         SelectIndex(currentSelection)
     End Sub
 
+    'Aquest metode 
+    'insereix un nou
+    'element en la base
+    'de dades
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
         Dim com As SqlCommand = New SqlCommand()
         Dim read As SqlDataReader
