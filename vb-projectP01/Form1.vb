@@ -1,4 +1,5 @@
 ﻿Imports System.Data.SqlClient
+Imports System.Globalization
 
 Public Class Form1
 
@@ -27,8 +28,7 @@ Public Class Form1
             ListBox1.Items.Add(item)
         Next
 
-        ListBox1.SelectedIndex = 0
-        LoadEmpleado()
+        SelectIndex(0)
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
@@ -39,8 +39,7 @@ Public Class Form1
             ListBox1.Items.Add(item)
         Next
 
-        ListBox1.SelectedIndex = 0
-        LoadEmpleado()
+        SelectIndex(0)
     End Sub
 
     Private Sub ListBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ListBox1.SelectedIndexChanged
@@ -48,12 +47,42 @@ Public Class Form1
     End Sub
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
-        If ListBox1.Items.Count - 1 = ListBox1.SelectedIndex Then
-            ListBox1.SelectedIndex = 0
-        Else
-            ListBox1.SelectedIndex += 1
+        If ListBox1.Items.Count > 0 Then
+            If ListBox1.Items.Count - 1 = ListBox1.SelectedIndex Then
+                SelectIndex(0)
+            Else
+                SelectIndex(ListBox1.SelectedIndex + 1)
+            End If
         End If
-        LoadEmpleado()
+    End Sub
+
+    Private Async Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+
+        Dim id As String = ListBox1.Items.Item(ListBox1.SelectedIndex).ToString().Split("-").ToList().First()
+        Dim com As SqlCommand = New SqlCommand()
+        Dim read As SqlDataReader
+
+        com.Connection = connection
+        com.CommandText = "DELETE FROM Empleados WHERE idEmpleado=" + id
+
+        read = Await com.ExecuteReaderAsync()
+        read.Close()
+
+        Dim list As List(Of String) = GetEmpleados("idEmpleado")
+        ListBox1.Items.Clear()
+
+        For Each item As String In list
+            ListBox1.Items.Add(item)
+        Next
+
+        SelectIndex(0)
+
+    End Sub
+
+    Private Sub SelectIndex(i As Integer)
+        If ListBox1.Items.Count > 0 Then
+            ListBox1.SelectedIndex = i
+        End If
     End Sub
 
     Private Function GetEmpleados(orderBy As String)
@@ -62,8 +91,16 @@ Public Class Form1
         Dim read As SqlDataReader
         Dim list As List(Of String) = New List(Of String)
 
+        Dim jefew As String = ""
+
+        If RadioButton2.Checked Then
+            jefew = "WHERE Jefe IS NOT NULL"
+        ElseIf RadioButton3.Checked Then
+            jefew = "WHERE Jefe IS NULL"
+        End If
+
         com.Connection = connection
-        com.CommandText = "SELECT idEmpleado, Nombre, Apellidos FROM Empleados ORDER BY " + orderBy
+        com.CommandText = "SELECT idEmpleado, Nombre, Apellidos FROM Empleados " + jefew + " ORDER BY " + orderBy
 
         read = com.ExecuteReader
 
@@ -77,29 +114,9 @@ Public Class Form1
 
     End Function
 
-    Private Function GetSingleEmpleado(id As String)
-
-        Dim com As SqlCommand = New SqlCommand()
-        Dim read As SqlDataReader
-        Dim res As String
-
-        com.Connection = connection
-        com.CommandText = "SELECT idEmpleado, Nombre, Apellidos FROM Empleados WHERE idEmpleado=" + id
-
-        read = com.ExecuteReader
-
-        read.Read()
-        res = read(0).ToString() + "- " + read(1).ToString() + " " + read(2).ToString()
-
-        read.Close()
-        Return res
-
-    End Function
-
-    Private Function LoadEmpleado()
+    Private Sub LoadEmpleado()
 
         Dim id As String = ListBox1.Items.Item(ListBox1.SelectedIndex).ToString().Split("-").ToList().First()
-        Console.WriteLine(id)
 
         Dim com As SqlCommand = New SqlCommand()
         Dim read As SqlDataReader
@@ -114,6 +131,7 @@ Public Class Form1
 
         ComboBox1.Items.Clear()
 
+        ComboBox1.Items.Add("")
         For Each item As String In list
             ComboBox1.Items.Add(item)
         Next
@@ -129,8 +147,77 @@ Public Class Form1
 
         read.Close()
 
-        If jefeId IsNot "" Then
-            ComboBox1.SelectedItem = GetSingleEmpleado(jefeId)
+        ComboBox1.SelectedIndex = 0
+        If jefeId.Length > 0 Then
+            For number As Integer = 0 To ComboBox1.Items.Count - 1
+                Dim currentId As String = ComboBox1.Items.Item(number).ToString().Split("-").ToList().First()
+                If currentId = jefeId Then
+                    ComboBox1.SelectedIndex = number
+                End If
+            Next
         End If
-    End Function
+
+    End Sub
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        Dim com As SqlCommand = New SqlCommand()
+        Dim read As SqlDataReader
+
+        Dim currentSelection As Integer = ListBox1.SelectedIndex
+
+        Dim JefeId As String = ComboBox1.SelectedText
+
+        If JefeId.Length > 0 Then
+            JefeId = ComboBox1.Items.Item(ComboBox1.SelectedIndex).ToString().Split("-").ToList().First()
+        End If
+
+        Dim edate As Date = DateTime.ParseExact(TextBox5.Text.ToString, "dd/MM/yy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)
+
+        com.Connection = connection
+        com.CommandText = "UPDATE Empleados SET Apellidos='" + TextBox2.Text + "', Nombre='" + TextBox3.Text + "', Cargo='" + TextBox4.Text + "', FechaNacimiento='" + edate.ToString("dd/MM/yy") + "', Jefe='" + JefeId + "' WHERE idEmpleado=" + TextBox1.Text
+
+        read = com.ExecuteReader
+
+        read.Close()
+
+
+        Dim list As List(Of String) = GetEmpleados("idEmpleado")
+        ListBox1.Items.Clear()
+
+        For Each item As String In list
+            ListBox1.Items.Add(item)
+        Next
+
+        SelectIndex(currentSelection)
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        Dim com As SqlCommand = New SqlCommand()
+        Dim read As SqlDataReader
+
+        Dim currentSelection As Integer = ListBox1.SelectedIndex
+
+        Dim JefeId As String = ComboBox1.SelectedText
+
+        If JefeId.Length > 0 Then
+            JefeId = ComboBox1.Items.Item(ComboBox1.SelectedIndex).ToString().Split("-").ToList().First()
+        End If
+
+        Dim edate As Date = DateTime.ParseExact(TextBox5.Text.ToString, "dd/MM/yy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)
+
+        com.Connection = connection
+        com.CommandText = "INSERT INTO Empleados (Apellidos, Nombre, Cargo, FechaNacimiento, Jefe) VALUES ('" + TextBox2.Text + "', '" + TextBox3.Text + "', '" + TextBox4.Text + "', '" + edate.ToString("dd/MM/yy") + "', '" + JefeId + "') "
+
+        read = com.ExecuteReader
+
+        read.Close()
+
+
+        Dim list As List(Of String) = GetEmpleados("idEmpleado")
+        ListBox1.Items.Clear()
+
+        For Each item As String In list
+            ListBox1.Items.Add(item)
+        Next
+    End Sub
 End Class
